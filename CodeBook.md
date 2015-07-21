@@ -1,5 +1,5 @@
 #Code Book - Wearables
-This code book outlines the steps undertaken by the R-script _run_anlaysis.R_ which can be found on the front page of this git hub.
+This code book outlines the steps undertaken by the R-script `run_anlaysis.R` which can be found in this repository.
 
 ##Sourcing the data
 The data is dowloaded from the following repository:
@@ -16,39 +16,44 @@ The zip file downloaded is then extracted to the working directory via
 ```
 
 ##Importing the data
-###Folder Structure
-The folder structure is setup as follows, after it is zipped up.
-
-The folder housing the data is `UCI HAR Dataset`, which contains multiple folders. The first folder, `train` has the training data as well as `test` which has the test data. Finally, the column headers are stored within `features.txt` housed in the home directory.
-
-The applicable files we end on concatenating are here:
+There are several files that are required to be imported to create our dataset. To manage this, I created a series of variables to hold the path information relative to the 'UCI HAR Dataset' folder:
 
 ```
-uci_path <- 'UCI HAR Dataset'
+#Path to the training data, the type and the subject #
 train_path <- 'train/X_train.txt'
+train_type <- 'train/y_train.txt'
+train_subj <- 'train/subject_train.txt'
+#Now for the test data, as above
 test_path <- 'test/X_test.txt'
+test_type <- 'test/y_test.txt'
+test_subj <- 'test/subject_test.txt'
+#And the names of the columns are here
 feat_path <- 'features.txt'
+```
+Since these are relative to the path, and my folder is in the working directory, I created a helper function to manage the concatenation and to try and keep as DRY (Don't Repeat Yourself) as possible.
 
-full_train <- paste(uci_path,train_path,sep="/")
-full_test <- paste(uci_path,test_path,sep="/")
-full_feat <- paste(uci_path,feat_path,sep="/")
+### Helper Function - concat_pth()
+`concat_pth()` is a simple function which takes two inputs:
+* pth - the path relative to the data folder. These are articulated in my implementation above.
+* fld - folder that has the data, defaults to 'UCI HAR Dataset'.
+
+Here is the function:
+```
+concat_pth <- function(pth,fld='UCI HAR Dataset') {
+  paste(fld,pth,sep="/")
+}
+```
+The paste function has a seperator argument, which concatenates each of the arguments with this in between.
+
+### The files - in depth
+Looking at the files more closely, there are 7 files which are brought together to make our dataset:
+
+* X\_train/X\_test: contains the data, made up of 561 columns of data read from the Galaxy
+* y\_train/y\_test: contains the activity identifier, which I've called `ActivityID`. These are later converted by...
+* activity_labels: Contains the mapping from ID to name, such as Laying etc.
+* subject\_train/subject\_test: Listing of the unique identifier of the subject/person whom the measurements relate to
+
+These are concatenated using the helper function articulated above, and stored in variables:
 ```
 
-Here the R function `paste()` is used with the `sep="/"` defined, so as to create a full path. This should work for any OS, however, I did it within Windows.
-
-###Bringing the data into R
-The format of the files seems to be delimited by spaces, however, there are instances where there are double spaces. To deal with these, the function `readLines()` is utilised to simply return the raw contents in a vector:
-
 ```
-train_data <- readLines(full_train)
-test_data <- readLines(full_test)
-feat <- read.table(full_feat,sep=" ")
-
-#Concatenate the training and test data sets
-full_data <- c(train_data,test_data)
-```
-Additionally, the column names are brought in here into the variable `feat`, which will be utilised later.
-
-The `c()` function here concatenates the two vectors together to one long vector. Now we need to split it into columns.
-
-##Working with the data
