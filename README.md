@@ -9,6 +9,7 @@ I have opted for a skinny implementation of tidy data. If you have not seen the 
 
 ## My output
 The average by subject & activity is in the following format:
+
 | Column name | Data Type | Description |
 | ---------- | ---------- | ----------- |
 | SubjectNumber| Integer | The individual person (subject) |
